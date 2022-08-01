@@ -73,7 +73,6 @@ class LatentMerger(nn.Module):
         return self.net(latent_spaces)
 
 
-
 class MultiInputPerceiverParallel(nn.Module):
     """
     --- Description ---
