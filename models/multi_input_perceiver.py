@@ -244,6 +244,7 @@ class MultiInputPerceiverParallel(nn.Module):
         """
 
         nn.Module.__init__(self)
+        self.config = config
 
         # Check the given config information
         assert len(self.config.input_channels) != 0, "The input_channels list was not provided"
