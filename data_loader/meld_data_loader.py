@@ -154,7 +154,7 @@ class Dataloader:
         for i in range(len(self.test_dialogue_length)):
             self.test_mask[i, :self.test_dialogue_length[i]] = 1.0
 
-    def load_audio_data(self, ):
+    def load_audio_data(self):
 
         AUDIO_PATH = "./data/pickles/audio_embeddings_feature_selection_{}.pkl".format(self.MODE.lower())
         self.train_audio_emb, self.val_audio_emb, self.test_audio_emb = pickle.load(open(AUDIO_PATH, "rb"))
@@ -164,14 +164,14 @@ class Dataloader:
         self.get_dialogue_labels()
         self.get_masks()
 
-    def load_text_data(self, ):
+    def load_text_data(self):
 
         self.get_dialogue_text_embs()
         self.get_dialogue_lengths()
         self.get_dialogue_labels()
         self.get_masks()
 
-    def load_bimodal_data(self, ):
+    def load_bimodal_data(self):
 
         TEXT_UNIMODAL = "./data/pickles/text_{}.pkl".format(self.MODE.lower())
         AUDIO_UNIMODAL = "./data/pickles/audio_{}.pkl".format(self.MODE.lower())
