@@ -11,7 +11,7 @@ class MeldDataModule(pl.LightningDataModule):
             self,
             batch_size: int = 64,
             num_workers: int = 4,
-            categories: Literal['sentiment', 'emotion'] = 'sentiment',
+            category: Literal['sentiment', 'emotion'] = 'sentiment',
             modalities: Literal['text', 'audio', 'bimodal', 'bimodal_fused'] = 'bimodal',
             max_len: int = 50
     ):
@@ -20,7 +20,7 @@ class MeldDataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
 
-        self.tensor_dataset = MeldTensorDataset(categories, modalities, max_len)
+        self.tensor_dataset = MeldTensorDataset(category, modalities, max_len)
 
     def train_dataloader(self):
         return DataLoader(

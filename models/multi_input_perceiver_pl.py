@@ -18,22 +18,28 @@ class MultiInputPerceiverPL(pl.LightningModule):
         self.lr = lr
 
     def training_step(self, batch, batch_idx, *args) -> STEP_OUTPUT:
-        return self.__step__(*batch, mode="train")
+        return self.__step(*batch, stage="train")
 
     def validation_step(self, batch, batch_idx, *args) -> STEP_OUTPUT:
-        return self.__step__(*batch, mode="val")
+        return self.__step(*batch, stage="val")
 
     def test_step(self, batch, batch_idx, **kwargs) -> STEP_OUTPUT:
-        return self.__step__(*batch, mode="test")
+        return self.__step(*batch, stage="test")
 
-    def __step(self, text, audio, mask, labels, *, mode) -> STEP_OUTPUT:
-        mask_list = [mask, mask]
-        data_list = [text, audio]
-        predicted = self.model(data_list, mask_list)
+    def __step(self, text, audio, mask, labels, *, stage) -> STEP_OUTPUT:
+        predicted = self.forward(text, audio, mask)
 
         loss = F.cross_entropy(predicted, labels)
-        self.log_dict({f'{mode}_loss': loss})
+        self.log_dict({f'{stage}_loss': loss})
         return loss
+
+    def forward(self, text, audio, mask):
+        data_list = [text, audio]
+        mask_list = [mask, mask]
+
+        predicted = self.model(data_list, mask_list)
+
+        return predicted
 
     def configure_optimizers(self):
         return torch.optim.Adam(lr=self.lr, params=self.model.parameters())

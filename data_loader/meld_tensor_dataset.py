@@ -9,26 +9,26 @@ from data_loader.meld_data_loader import MeldDataloader
 class MeldTensorDataset:
     def __init__(
             self,
-            categories: Literal['sentiment', 'emotion'] = 'sentiment',
+            category: Literal['sentiment', 'emotion'] = 'sentiment',
             modalities: Literal['text', 'audio', 'bimodal', 'bimodal_fused'] = 'bimodal',
             max_len: int = 50
     ):
-        self.categories = categories
+        self.categories = category
         self.modalities = modalities
 
         self.data_loaders = []
         if modalities in ['text', 'bimodal']:
-            text_dl = MeldDataloader(categories, max_len)
+            text_dl = MeldDataloader(category, max_len)
             text_dl.load_text_data()
             self.data_loaders.append(text_dl)
 
         if modalities in ['audio', 'bimodal']:
-            audio_dl = MeldDataloader(categories, max_len)
+            audio_dl = MeldDataloader(category, max_len)
             audio_dl.load_audio_data()
             self.data_loaders.append(audio_dl)
 
         if modalities in ['bimodal_fused']:
-            fused_dl = MeldDataloader(categories, max_len)
+            fused_dl = MeldDataloader(category, max_len)
             fused_dl.load_bimodal_data()
             self.data_loaders.append(fused_dl)
 
@@ -62,10 +62,10 @@ class MeldTensorDataset:
         labels = list(map(lambda x: torch.from_numpy(x), labels[:1]))
         mask = list(map(lambda x: torch.from_numpy(x), mask[:1]))
 
-        self._tensor_datasets[stage] = TensorDataset(*features, *labels, *mask)
+        self._tensor_datasets[stage] = TensorDataset(*features, *mask, *labels)
         return self._tensor_datasets[stage]
 
 
 if __name__ == "__main__":
-    td = MeldTensorDataset(categories="emotion", modalities="bimodal")
+    td = MeldTensorDataset(category="emotion", modalities="bimodal")
     td.get_tensor_dataset(stage="train")
