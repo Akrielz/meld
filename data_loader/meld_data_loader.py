@@ -1,30 +1,29 @@
 import pickle
 from collections import defaultdict
+from typing import Literal
 
 import numpy as np
 
 
-class Dataloader:
+class MeldDataloader:
 
     def __init__(
             self,
-            mode=None,
-            max_length=None
+            category: Literal['sentiment', 'emotion'] = 'Sentiment',
+            max_len: int = 50
     ):
 
         try:
-            assert (mode is not None)
+            assert (category is not None)
         except AssertionError as e:
-            print("Set mode as 'Sentiment' or 'Emotion'")
             exit()
 
-        self.MODE = mode  # Sentiment or Emotion classification mode
-        self.max_l = max_length
+        self.category = category  # Sentiment or Emotion classification mode
+        self.max_len = max_len
 
-        x = pickle.load(open("./data/pickles/data_{}.p".format(self.MODE.lower()), "rb"))
+        x = pickle.load(open("./data/pickles/data_{}.p".format(self.category.lower()), "rb"))
         revs, self.W, self.word_idx_map, self.vocab, _, label_index = x[0], x[1], x[2], x[3], x[4], x[5]
         self.num_classes = len(label_index)
-        print("Labels used for this classification: ", label_index)
 
         # Preparing data
         self.train_data, self.val_data, self.test_data = {}, {}, {}
@@ -51,7 +50,7 @@ class Dataloader:
 
     def get_word_indices(self, data_x):
         length = len(data_x.split())
-        return np.array([self.word_idx_map[word] for word in data_x.split()] + [0] * (self.max_l - length))[:self.max_l]
+        return np.array([self.word_idx_map[word] for word in data_x.split()] + [0] * (self.max_len - length))[:self.max_len]
 
     def get_dialogue_ids(self, keys):
         ids = defaultdict(list)
@@ -84,7 +83,6 @@ class Dataloader:
                     try:
                         local_audio.append(audio_emb[vid + "_" + str(utt)][:])
                     except:
-                        print(vid + "_" + str(utt))
                         local_audio.append(pad[:])
                 for _ in range(self.max_utts - len(local_audio)):
                     local_audio.append(pad[:])
@@ -156,7 +154,7 @@ class Dataloader:
 
     def load_audio_data(self):
 
-        AUDIO_PATH = "./data/pickles/audio_embeddings_feature_selection_{}.pkl".format(self.MODE.lower())
+        AUDIO_PATH = "./data/pickles/audio_embeddings_feature_selection_{}.pkl".format(self.category.lower())
         self.train_audio_emb, self.val_audio_emb, self.test_audio_emb = pickle.load(open(AUDIO_PATH, "rb"))
 
         self.get_dialogue_audio_embs()
@@ -173,8 +171,8 @@ class Dataloader:
 
     def load_bimodal_data(self):
 
-        TEXT_UNIMODAL = "./data/pickles/text_{}.pkl".format(self.MODE.lower())
-        AUDIO_UNIMODAL = "./data/pickles/audio_{}.pkl".format(self.MODE.lower())
+        TEXT_UNIMODAL = "./data/pickles/text_{}.pkl".format(self.category.lower())
+        AUDIO_UNIMODAL = "./data/pickles/audio_{}.pkl".format(self.category.lower())
 
         # Load features
         train_text_x, val_text_x, test_text_x = pickle.load(open(TEXT_UNIMODAL, "rb"), encoding='latin1')
@@ -193,3 +191,9 @@ class Dataloader:
         self.get_dialogue_lengths()
         self.get_dialogue_labels()
         self.get_masks()
+
+
+if __name__ == "__main__":
+    dl = MeldDataloader(category="sentiment")
+    dl.load_audio_data()
+    pass
