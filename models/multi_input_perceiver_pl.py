@@ -23,7 +23,7 @@ class MultiInputPerceiverPL(pl.LightningModule):
 
         self.model = MultiInputPerceiverParallel(model_config)
 
-        self.text_embedder = nn.Embedding(num_words, text_dim)
+        self.text_embedder = nn.Embedding(num_words, text_dim, padding_idx=0)
         self.audio_embedder = nn.Sequential(
             Rearrange("... t -> ... t 1"),
             nn.Linear(1, audio_dim, bias=audio_bias)
