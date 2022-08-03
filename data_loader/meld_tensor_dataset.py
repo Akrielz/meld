@@ -59,8 +59,12 @@ class MeldTensorDataset:
                 mask.append(dl.test_mask)
 
         features = list(map(lambda x: torch.from_numpy(x), features))
+
         labels = list(map(lambda x: torch.from_numpy(x), labels[:1]))
+        labels[0] = labels[0].argmax(dim=-1)
+
         mask = list(map(lambda x: torch.from_numpy(x), mask[:1]))
+        mask[0] = mask[0].bool()
 
         self._tensor_datasets[stage] = TensorDataset(*features, *mask, *labels)
         return self._tensor_datasets[stage]

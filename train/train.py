@@ -2,12 +2,13 @@ from typing import Literal
 
 import torch
 import pytorch_lightning as pl
-import yaml
 
 from data_loader.meld_data_module import MeldDataModule
 from models.multi_input_perceiver import MultiInputPerceiverParallel
 from models.multi_input_perceiver_pl import MultiInputPerceiverPL
 
+
+NUM_WORDS = 6336
 
 def model_train(
         mip_config: MultiInputPerceiverParallel.Config,
@@ -15,7 +16,9 @@ def model_train(
         batch_size: int = 64,
         num_workers: int = 4,
         category: Literal['sentiment', 'emotion'] = 'emotion',
-        max_len: int = 50
+        max_len: int = 50,
+        text_dim: int = 2048,
+        audio_dim: int = 256,
 ):
     gpus = -1 if torch.cuda.device_count() else 0
 
@@ -32,7 +35,10 @@ def model_train(
 
     pl_module = MultiInputPerceiverPL(
         model_config=mip_config,
-        lr=lr
+        lr=lr,
+        num_words = NUM_WORDS,
+        text_dim = text_dim,
+        audio_dim = audio_dim,
     )
 
     datamodule = MeldDataModule(
@@ -47,7 +53,7 @@ def model_train(
 
 if __name__ == '__main__':
     mip_config = MultiInputPerceiverParallel.Config(
-        input_channels=[64, 64],
+        input_channels=[2048, 256],
         input_axis=[1, 1],
 
         num_classes=7
@@ -56,9 +62,11 @@ if __name__ == '__main__':
     model_train(
         mip_config=mip_config,
         lr=1e-3,
-        batch_size=64,
+        batch_size=4,
         num_workers=0,
         category='emotion',
-        max_len=50
+        max_len=50,
+        text_dim=2048,
+        audio_dim=256,
     )
 

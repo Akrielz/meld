@@ -195,5 +195,5 @@ class MeldDataloader:
 
 if __name__ == "__main__":
     dl = MeldDataloader(category="sentiment")
-    dl.load_audio_data()
+    dl.load_text_data()
     pass
