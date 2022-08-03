@@ -9,6 +9,7 @@ from models.multi_input_perceiver_pl import MultiInputPerceiverPL
 
 
 NUM_WORDS = 6336
+MAX_LEN = 88
 
 def model_train(
         mip_config: MultiInputPerceiverParallel.Config,
@@ -65,7 +66,7 @@ if __name__ == '__main__':
         batch_size=4,
         num_workers=0,
         category='emotion',
-        max_len=50,
+        max_len=100,
         text_dim=2048,
         audio_dim=256,
     )

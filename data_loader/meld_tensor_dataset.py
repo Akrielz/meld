@@ -71,5 +71,5 @@ class MeldTensorDataset:
 
 
 if __name__ == "__main__":
-    td = MeldTensorDataset(category="emotion", modalities="bimodal")
-    td.get_tensor_dataset(stage="train")
+    td = MeldTensorDataset(category="emotion", modalities="bimodal", max_len=100)
+    td.get_tensor_dataset(stage="val")
