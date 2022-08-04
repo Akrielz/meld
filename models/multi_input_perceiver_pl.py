@@ -4,6 +4,7 @@ from einops.layers.torch import Rearrange
 from pytorch_lightning.utilities.types import STEP_OUTPUT
 from torch.nn import functional as F
 from torch import nn
+from torchmetrics import Accuracy, AveragePrecision, AUROC, Dice, F1Score
 
 from models.multi_input_perceiver import MultiInputPerceiverParallel
 
@@ -31,6 +32,16 @@ class MultiInputPerceiverPL(pl.LightningModule):
 
         self.lr = lr
 
+        num_classes = model_config.num_classes
+
+        self.metrics = [
+            Accuracy(num_classes=num_classes),
+            AveragePrecision(num_classes=num_classes),
+            AUROC(num_classes=num_classes),
+            Dice(num_classes=num_classes),
+            F1Score(num_classes=num_classes),
+        ]
+
     def training_step(self, batch, batch_idx, *args) -> STEP_OUTPUT:
         return self.__step(*batch, stage="train")
 
@@ -45,8 +56,17 @@ class MultiInputPerceiverPL(pl.LightningModule):
 
         labels = labels[mask]
 
+        # Apply loss
         loss = F.cross_entropy(predicted, labels)
         self.log_dict({f'{stage}_loss': loss})
+
+        # Compute metrics
+        for metric in self.metrics:
+            metric.update(predicted, labels)
+            metric_name = f'{metric.__repr__()[:-2]}'
+            metric_value = metric.compute()
+            self.log_dict({f'{stage}_{metric_name}': metric_value})
+
         return loss
 
     def forward(self, text, audio, mask):
