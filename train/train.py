@@ -40,6 +40,7 @@ def model_train(
         num_words=NUM_WORDS,
         text_dim=text_dim,
         audio_dim=audio_dim,
+        use_gpu=gpus != 0
     )
 
     datamodule = MeldDataModule(
@@ -59,6 +60,7 @@ if __name__ == '__main__':
 
         latent_dim=128,
         num_latents=128,
+        duplicate_latents=False,
 
         depth=2,
 
@@ -84,8 +86,8 @@ if __name__ == '__main__':
     model_train(
         mip_config=mip_config,
         lr=1e-3,
-        batch_size=4,
-        num_workers=4,
+        batch_size=2,
+        num_workers=0,
         category='emotion',
         max_len=MAX_LEN,
         text_dim=1024,

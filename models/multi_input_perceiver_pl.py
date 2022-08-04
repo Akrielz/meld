@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytorch_lightning as pl
 import torch
 from einops.layers.torch import Rearrange
@@ -19,6 +21,7 @@ class MultiInputPerceiverPL(pl.LightningModule):
             text_dim: int = 2048,
             audio_dim: int = 256,
             audio_bias: bool = True,
+            use_gpu: bool = False,
     ):
         super().__init__()
 
@@ -34,13 +37,25 @@ class MultiInputPerceiverPL(pl.LightningModule):
 
         num_classes = model_config.num_classes
 
-        self.metrics = [
+        metrics_train = [
             Accuracy(num_classes=num_classes),
             AveragePrecision(num_classes=num_classes),
             AUROC(num_classes=num_classes),
             Dice(num_classes=num_classes),
             F1Score(num_classes=num_classes),
         ]
+
+        if use_gpu:
+            metrics_train = list(map(lambda x: x.cuda(), metrics_train))
+
+        metrics_val = deepcopy(metrics_train)
+        metrics_test = deepcopy(metrics_train)
+
+        self.metrics = {
+            "train": metrics_train,
+            "val": metrics_val,
+            "test": metrics_test
+        }
 
     def training_step(self, batch, batch_idx, *args) -> STEP_OUTPUT:
         return self.__step(*batch, stage="train")
@@ -52,7 +67,7 @@ class MultiInputPerceiverPL(pl.LightningModule):
         return self.__step(*batch, stage="test")
 
     def update_metrics(self, predicted, labels, stage):
-        for metric in self.metrics:
+        for metric in self.metrics[stage]:
             metric.update(predicted, labels)
             metric_name = f'{metric.__repr__()[:-2]}'
             metric_value = metric.compute()
