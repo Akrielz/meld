@@ -51,6 +51,13 @@ class MultiInputPerceiverPL(pl.LightningModule):
     def test_step(self, batch, batch_idx, **kwargs) -> STEP_OUTPUT:
         return self.__step(*batch, stage="test")
 
+    def update_metrics(self, predicted, labels, stage):
+        for metric in self.metrics:
+            metric.update(predicted, labels)
+            metric_name = f'{metric.__repr__()[:-2]}'
+            metric_value = metric.compute()
+            self.log_dict({f'{stage}_{metric_name}': metric_value})
+
     def __step(self, text, audio, mask, labels, *, stage) -> STEP_OUTPUT:
         predicted = self.forward(text, audio, mask)
 
@@ -60,12 +67,8 @@ class MultiInputPerceiverPL(pl.LightningModule):
         loss = F.cross_entropy(predicted, labels)
         self.log_dict({f'{stage}_loss': loss})
 
-        # Compute metrics
-        for metric in self.metrics:
-            metric.update(predicted, labels)
-            metric_name = f'{metric.__repr__()[:-2]}'
-            metric_value = metric.compute()
-            self.log_dict({f'{stage}_{metric_name}': metric_value})
+        # Update metrics
+        self.update_metrics(predicted, labels, stage)
 
         return loss
 
